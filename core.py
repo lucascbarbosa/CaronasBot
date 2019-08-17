@@ -13,17 +13,26 @@ class Bot_Caronas():
         self.preço_noturno = preço_noturno
         self.regras = """Regras: .\n--> Caronas para o dia seguinte podem ser oferecidas ou pedidas após as 19hrs. \n--> No grupo é proibido conversas paralelas. O único assunto permitido é o oferecimento e procura de caronas. Caso tenha uma notícia ou dúvida importante do trânsito, segurança ou da faculdade a ser compartilhada, usar [OFF] antes da mensagem. São proibidas imagens, vídeos e stickers.\n--> Seja pontual e evite cancelar em cima da hora, caso seja necessário, avise os demais da carona e tenha empatia caso alguém faça com você.\n--> Solicitamos nome e foto de perfil liberado para maior segurança.\n--> Seja cordial, ações machistas, homofóbicas ou racistas dentro das caronas e denunciadas não serão toleradas e resultarão em expulsão do grupo."""
 
-    def ajuda(self, bot, update):
-        response_message = """
-    /add ida/volta [hh:mm] [descricao] para oferecer carona de volta.\n      Ex: /add ida 7:30 Até o Mundial.\n/regras - para visualizar as regras do grupo.\n/mudar_regras - para modificar as regras do grupo.\n/remover ida/volta [hh:mm] para remover oferta de carona de ida.\n      Ex: /remover volta 8:00.\n/ida ou /volta para mostrar caronas para ida/volta oferecidas.\n/entrou ou /saiu ida/volta [quantidade] para o/a MOTORISTA diminuir ou aumentar o numero de vagas da carona.\n      Ex: /saiu ida 3, /entrou volta 1.\n/vagas para o/a MOTORISTA  saber o numero de vagas dentro do seu carro.\n/set_preco diurno/noturno [reais.centavos] para os ADMS definirem o valor da carona diurna/noturna.\n       Ex: /set_preco diurno 7.0.\n/preco diurno/noturno para saber o valor da carona diurna/noturna.\n/find [hh:mm(ida),hh:mm(volta)] para procurar caronas nos horários informados, e mandar mensagem para os motoristas.\n\n       Criado por Lucas Costa Barbosa github: @lucascbarbosa https://github.com/lucascbarbosa/CaronasBot"""
-        update.message.reply_text(response_message)
+    def ajuda(self, bot, update, chat_data):
+        response_message = """Clica aqui: @RecreioBot e aperte start.\n\n/add ida/volta [hh:mm] [descricao] para oferecer carona de volta.\n      Ex: /add ida 7:30 Até o Mundial.\n/regras - para visualizar as regras do grupo.\n/remover ida/volta [hh:mm] para remover oferta de carona de ida.\n      Ex: /remover volta 8:00.\n/ida ou /volta para mostrar caronas para ida/volta oferecidas.\n/entrou ou /saiu ida/volta [quantidade] para o/a MOTORISTA diminuir ou aumentar o numero de vagas da carona.\n      Ex: /saiu ida 3, /entrou volta 1.\n/vagas ida/volta para o/a MOTORISTA  saber o numero de vagas dentro do seu carro.\n       Ex: /set_preco diurno 7.0.\n/preco diurno/noturno para saber o valor da carona diurna/noturna.\n/find [hh:mm(ida),hh:mm(volta)] para procurar caronas nos horários informados, e mandar mensagem para os motoristas.\n\nCriado por Lucas Costa Barbosa github: @lucascbarbosa https://github.com/lucascbarbosa/CaronasBot"""
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text=response_message, disable_web_page_preview=True)
 
     def mostrarRegras(self, bot, update):
         update.message.reply_text(self.regras)
 
-    def mudarRegras(self, bot, update, args):
-        self.regras = args[0]
-        update.message.reply_text('Regras mudadas')
+    def mudarRegras(self, bot, update, args, user_data, chat_data):
+        chat_id = update.message.chat_id
+        user_id = update.message.from_user['id']
+        user = bot.get_chat_member(chat_id, user_id)
+        status = user['status']
+        if status == 'administrator':
+            self.regras = ' '.join(args)
+            update.message.reply_text('Regras mudadas')
+
+        else:
+            update.message.reply_text(
+                'Você não possui permissão para mudar as regras')
 
     def add(self, bot, update, args, user_data, chat_data):
         sentido_add = args[0].lower()
@@ -64,18 +73,26 @@ class Bot_Caronas():
                 update.message.reply_text('Carona de volta adiconada')
 
     def ida(self, bot, update):
-        update.message.reply_text('Horários de Ida:')
+        head = '*Horários de Ida:*'
+        bot.sendMessage(chat_id=update.message.chat_id, text=head,
+                        parse_mode=telegram.ParseMode.MARKDOWN)
+        msg = ''
         for horario, username, user_id, descricao, vagas in self.caronas_ida:
-            msg = 'Horário: ' + horario + ' - Motorista: @' + username + \
-                ' - Descrição: ' + descricao + ' - Vagas: ' + str(vagas)
-            bot.sendMessage(chat_id=update.message.chat_id, text=msg)
+            msg += 'Horário: ' + horario + ' - Motorista: @' + username + \
+                ' - Descrição: ' + descricao + ' - Vagas: ' + str(vagas) + '\n'
+
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg)
 
     def volta(self, bot, update):
-        update.message.reply_text('Horários de Volta:')
+        head = '*Horários de Volta:*'
+        bot.sendMessage(chat_id=update.message.chat_id, text=head,
+                        parse_mode=telegram.ParseMode.MARKDOWN)
+        msg = ''
         for horario, username, user_id, descricao, vagas in self.caronas_volta:
-            msg = 'Horário: ' + horario + ' - Motorista: @' + username + \
-                ' - Descrição: ' + descricao + ' - Vagas: ' + str(vagas)
-            bot.sendMessage(chat_id=update.message.chat_id, text=msg)
+            msg += 'Horário: ' + horario + ' - Motorista: @' + username + \
+                ' - Descrição: ' + descricao + ' - Vagas: ' + str(vagas) + '\n'
+
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg)
 
     def saiu(self, bot, update, args, user_data, chat_data):
         sentido = args[0].lower()
@@ -105,7 +122,6 @@ class Bot_Caronas():
         sentido = args[0].lower()
         qtd = int(args[1])
         username = update.message.from_user['username']
-        print(sentido, qtd, username)
         if sentido == 'ida':
             for i in range(len(self.caronas_ida)):
                 if self.caronas_ida[i][1] == username:
@@ -166,7 +182,7 @@ class Bot_Caronas():
             user_id = update.message.from_user['id']
             user = bot.get_chat_member(chat_id, user_id)
             status = user['status']
-            if status == 'creator' or status == 'administrator':
+            if status == 'administrator':
                 self.preço_diurno = float(args[1])
                 update.message.reply_text('Preço da carona diurna modificado.')
             else:
@@ -201,21 +217,28 @@ class Bot_Caronas():
         meu_user = update.message.from_user['username']
         ida, volta = args[0].split(',')
 
-        for i in range(len(self.caronas_ida)):
-            horario = self.caronas_ida[i][0]
-            user_id = self.caronas_ida[i][2]
-            if horario == ida:
-                msg = 'Mensagem de @%s: Oi, tem vaga pra ida?' % (
-                    str(meu_user))
-                bot.sendMessage(chat_id=user_id, text=msg)
+        if int(ida.split(':')[0]) == 0:
+            pass
+        else:
 
-        for i in range(len(self.caronas_volta)):
-            horario = self.caronas_volta[i][0]
-            user_id = self.caronas_volta[i][2]
-            if horario == volta:
-                msg = 'Mensagem de @%s: Oi, tem vaga pra volta?' % (
-                    str(meu_user))
-                bot.sendMessage(chat_id=user_id, text=msg)
+            for i in range(len(self.caronas_ida)):
+                horario = self.caronas_ida[i][0]
+                user_id = self.caronas_ida[i][2]
+                if horario == ida:
+                    msg = 'Mensagem de @%s: Oi, tem vaga pra ida?' % (
+                        str(meu_user))
+                    bot.sendMessage(chat_id=user_id, text=msg)
+        if int(volta.split(':')[0]) == 0:
+            pass
+        else:
+
+            for i in range(len(self.caronas_volta)):
+                horario = self.caronas_volta[i][0]
+                user_id = self.caronas_volta[i][2]
+                if horario == volta:
+                    msg = 'Mensagem de @%s: Oi, tem vaga pra volta?' % (
+                        str(meu_user))
+                    bot.sendMessage(chat_id=user_id, text=msg)
 
 
 def main():
@@ -237,7 +260,7 @@ def main():
     # on different commands - answer in Telegram
 
     dispatcher.add_handler(
-        CommandHandler('help', bot_car.ajuda)
+        CommandHandler('help', bot_car.ajuda, pass_chat_data=True)
     )
 
     dispatcher.add_handler(
@@ -245,7 +268,8 @@ def main():
     )
 
     dispatcher.add_handler(
-        CommandHandler('mudar_regras', bot_car.mudarRegras, pass_args=True)
+        CommandHandler('mudar_regras', bot_car.mudarRegras,
+                       pass_args=True, pass_chat_data=True, pass_user_data=True)
     )
 
     dispatcher.add_handler(
@@ -307,3 +331,4 @@ def main():
 if __name__ == '__main__':
     print("press CTRL + C to cancel.")
     main()
+
