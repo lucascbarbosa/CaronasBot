@@ -286,28 +286,33 @@ def main():
     )
 
     dispatcher.add_handler(
+        CommandHandler('picpay', bot_car.picpay,pass_args=True,
+                        pass_user_data=True,pass_chat_data=True)
+    )
+
+    dispatcher.add_handler(
         CommandHandler('remover', bot_car.remover, pass_args=True,
-                       pass_user_data=True, pass_chat_data=True)
+                        pass_user_data=True, pass_chat_data=True)
     )
 
     dispatcher.add_handler(
         CommandHandler('entrou', bot_car.entrou, pass_args=True,
-                       pass_user_data=True, pass_chat_data=True)
+                        pass_user_data=True, pass_chat_data=True)
     )
 
     dispatcher.add_handler(
         CommandHandler('saiu', bot_car.saiu, pass_args=True,
-                       pass_user_data=True, pass_chat_data=True)
+                        pass_user_data=True, pass_chat_data=True)
     )
 
     dispatcher.add_handler(
         CommandHandler('vagas', bot_car.getVagas, pass_args=True,
-                       pass_user_data=True, pass_chat_data=True)
+                        pass_user_data=True, pass_chat_data=True)
     )
 
     dispatcher.add_handler(
         CommandHandler('set_preco', bot_car.setPreço, pass_args=True,
-                       pass_chat_data=True, pass_user_data=True)
+                        pass_chat_data=True, pass_user_data=True)
     )
 
     dispatcher.add_handler(
@@ -316,8 +321,9 @@ def main():
 
     dispatcher.add_handler(
         CommandHandler('find', bot_car.findCaronas,
-                       pass_args=True, pass_user_data=True)
+                        pass_args=True, pass_user_data=True)
     )
+
 
     # Start the Bot
     updater.start_polling()
